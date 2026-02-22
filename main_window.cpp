@@ -30,19 +30,17 @@ static QFrame* makeTile(const QString& title,
 
     // This stylesheet draws the lines between widgets (tile borders)
     // and makes the title smaller/dimmer.
-    frame->setStyleSheet(R"(
-    QFrame {
-        border: 2px solid #404040;
-        border-radius: 2px;
-        background: #101010;
-    }
-    QLabel {
-        padding: 0px;
-        margin: 0px;
-    }
-    QLabel#title {
-        color: #B0B0B0;
-    }
+   frame->setStyleSheet(R"(
+QFrame {
+    border: 2px solid #404040;
+    border-radius: 2px;
+    background: #101010;
+}
+QLabel { padding: 0px; margin: 0px; }
+
+QLabel#title     { color: #B0B0B0; }
+QLabel#primary   { color: #F0F0F0; }
+QLabel#secondary { color: #C8C8C8; }
 )");
     auto* titleLabel = new QLabel(title);
     titleLabel->setObjectName("title");
@@ -69,6 +67,9 @@ static QFrame* makeTile(const QString& title,
 
     // If you don't want the secondary line to take space when empty:
     secondary->setVisible(false);
+    
+    primary->setObjectName("primary");
+    secondary->setObjectName("secondary");
 
     auto* layout = new QVBoxLayout(frame);
     layout->setContentsMargins(4,2,4,2);
