@@ -67,7 +67,7 @@ QLabel#secondary { color: #C8C8C8; }
 
     // If you don't want the secondary line to take space when empty:
     secondary->setVisible(false);
-    
+
     primary->setObjectName("primary");
     secondary->setObjectName("secondary");
 
@@ -107,8 +107,8 @@ void MainWindow::buildUi()
     QLabel* speed_secondary = nullptr;   // you can ignore if unused
     QLabel* heading_secondary = nullptr; 
 
-    auto* speedTile   = makeTile("SPEED (mph)", 64, 16, &speed_value_, &speed_secondary);
-    auto* headingTile = makeTile("HEADING",      48, 18, &heading_value_, &heading_secondary);
+    auto* speedTile   = makeTile("miles per hour", 64, 16, &speed_value_, &speed_secondary);
+    auto* headingTile = makeTile("compass", 48, 36, &heading_value_, &heading_secondary);
 
     heading_degrees_value_ = heading_secondary;  
 
@@ -123,9 +123,9 @@ void MainWindow::buildUi()
     QLabel* odo_secondary  = nullptr;
     QLabel* fix_secondary  = nullptr;
 
-    auto* timeTile = makeTile("UTC TIME", 20, 12, &time_value_, &time_secondary);
-    auto* odoTile  = makeTile("ODOMETER (mi)", 20, 12, &odo_value_, &odo_secondary);
-    auto* fixTile  = makeTile("SV USED", 18, 12, &fix_value_, &fix_secondary);
+    auto* timeTile = makeTile("time", 20, 12, &time_value_, &time_secondary);
+    auto* odoTile  = makeTile("odo", 36, 12, &odo_value_, &odo_secondary);
+    auto* fixTile  = makeTile("sats", 36, 12, &fix_value_, &fix_secondary);
 
     auto* bottom = new QGridLayout;
     bottom->setContentsMargins(0, 0, 0, 0);
@@ -161,7 +161,7 @@ void MainWindow::onUiTick()
 
     const GnssPvt& s = gnss_->state();
 
-    speed_value_->setText(QString::number(s.sog_mph, 'f', 4));
+    speed_value_->setText(QString::number(s.sog_mph, 'f', 3));
 
     heading_value_->setText(s.cardinal_direction);
 
