@@ -2,9 +2,10 @@
 
 #include <QMainWindow>
 #include <QTimer>
-
+#include <QStackedWidget>
+#include <QPushButton>
 class QLabel;
-class GnssClient;   // forward declare your existing class
+class GnssClient;  
 
 class MainWindow final : public QMainWindow
 {
@@ -13,15 +14,22 @@ class MainWindow final : public QMainWindow
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override = default;
-
+protected:
+bool event(QEvent* e) override;
 private slots:
-    void onUiTick();   // 5 Hz UI refresh
+    void onUiTick();   
+    void showPrevPage();
+    void showNextPage();
 
 private:
     void buildUi();
+    QWidget* buildPage1();   
+    QWidget* buildPage2();  
 
-private:
-    // UI labels (Run 1 layout)
+    QStackedWidget* pages_ = nullptr;
+    QPushButton* prev_btn_ = nullptr;
+    QPushButton* next_btn_ = nullptr;
+    
     QLabel* speed_value_ = nullptr;
     QLabel* heading_value_ = nullptr;
     QLabel* heading_degrees_value_ = nullptr;
