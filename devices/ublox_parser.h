@@ -22,6 +22,8 @@ class UbloxParser {
     uint32_t itow(); 
     uint8_t numSv();
     std::array<uint16_t, 6> utcDateTime();
+    std::string differentialMode();
+    uint8_t correctionAge();
 
     private:
     static constexpr uint16_t kMaxPacketSize{640U};

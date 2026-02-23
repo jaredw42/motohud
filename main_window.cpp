@@ -140,11 +140,11 @@ QWidget* MainWindow::buildPage1()
     auto* speedTile   = makeTile("miles per hour", 64, 16,
                                  &speed_value_, &speed_secondary);
 
-    auto* headingTile = makeTile("compass", 48, 36,
+    auto* headingTile = makeTile("compass", 84, 36,
                                  &heading_value_, &heading_secondary);
 
     heading_degrees_value_ = heading_secondary;
-
+    
     auto* top = new QGridLayout;
     top->setContentsMargins(0, 0, 0, 0);
     top->setSpacing(0);
@@ -163,8 +163,9 @@ QWidget* MainWindow::buildPage1()
                               &odo_value_, &odo_secondary);
 
     auto* fixTile  = makeTile("sats", 36, 12,
-                              &fix_value_, &fix_secondary);
-
+                              &sv_value_, &fix_secondary);
+    
+    fix_value_ = fix_secondary; 
     auto* bottom = new QGridLayout;
     bottom->setContentsMargins(0, 0, 0, 0);
     bottom->setSpacing(0);
@@ -208,7 +209,7 @@ void MainWindow::onUiTick()
         heading_value_->setText("--");
         time_value_->setText("--:--:--");
         odo_value_->setText("--");
-        fix_value_->setText(QString("DISCONNECTED"));
+        sv_value_->setText(QString("DISCONNECTED"));
         return;
     }
 
@@ -223,15 +224,26 @@ void MainWindow::onUiTick()
         heading_degrees_value_->setText(QString::number(s.heading, 'f', 1) + QChar(0x00B0));
         heading_degrees_value_->setVisible(true);
     }
-    const auto dt = s.utc_datetime;
-QDate date(dt[0], dt[1], dt[2]);
-QTime time(dt[3], dt[4], dt[5]);
 
-QDateTime datetime(date, time, Qt::UTC);
+    
+    const auto dt = s.utc_datetime;
+    QDate date(dt[0], dt[1], dt[2]);
+    QTime time(dt[3], dt[4], dt[5]);
+
+    QDateTime datetime(date, time, Qt::UTC);
 
     time_value_->setText(datetime.toLocalTime().toString("hh:mm:ss\nyyyy-MM-dd"));
     odo_value_->setText(QString::number(odo_distance_, 'f', 1));
-    fix_value_->setText(QString::number(s.num_sv));
+    sv_value_->setText(QString::number(s.num_sv));
+
+    if (fix_value_ != nullptr) {
+        QString agestr = QString::number(s.correction_age);
+        QString fixstr = QString::fromStdString(s.differential_mode);
+        // fixstr.append(QString::fromStdString(" - "));
+        // fixstr.append(agestr);
+        fix_value_->setText(fixstr);
+        fix_value_->setVisible(true);
+    }
 
     odo_distance_ += 0.02;
 }

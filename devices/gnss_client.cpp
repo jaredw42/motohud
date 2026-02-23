@@ -92,6 +92,10 @@ void GnssClient::updateGnssPvt() {
     state_.num_sv = ublox_parser_.numSv();
     state_.utc_datetime = ublox_parser_.utcDateTime(); 
     state_.cardinal_direction = degreesToCardinal(state_.heading);
+
+    state_.differential_mode = ublox_parser_.differentialMode(); 
+    state_.correction_age = ublox_parser_.correctionAge();
+
 }
 
 QString GnssClient::degreesToCardinal(const float degrees) {

@@ -28,6 +28,8 @@ class GnssPvt {
     std::array<uint16_t, 6> utc_datetime;
 
     uint8_t num_sv;
+    uint8_t correction_age; 
+    std::string differential_mode; 
 
 
 };

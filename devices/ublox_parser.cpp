@@ -101,16 +101,13 @@ bool UbloxParser::processMessage(
     MsgClassId id, const std::array< uint8_t, kMaxPacketSize>& payload) {
 
   bool status = true;
-//   std::cout << "processMessage id: " << static_cast<uint16_t>(id) << "\n";
   switch (id) {
   case MsgClassId::kUbxNavPvt: {
 
     
-    // std::cout<< "payload size: " << payload_length_ << " expected: " << sizeof(UbxNavPvtMsg) << "\n";
     if (payload_length_ == sizeof(UbxNavPvtMsg)) {
         nav_pvt_data_ = *reinterpret_cast<const UbxNavPvtMsg*>(payload.data());
         status = true;
-        // std::cout<< "lat: " << nav_pvt_data_.lat.value() * 1e-7 << "\n"; 
     }
   }break;
 
@@ -159,6 +156,100 @@ std::array<uint16_t, 6> UbloxParser::utcDateTime() {
 
     
     return std::array<uint16_t,6>{nav_pvt_data_.year.value(), nav_pvt_data_.month, nav_pvt_data_.day, nav_pvt_data_.hour, nav_pvt_data_.min, nav_pvt_data_.sec};
+}
+
+std::string UbloxParser::differentialMode(){
+
+    const std::array<std::string, 4> modes = {"SPS", "DGNSS", "FLOAT", "INTEGER"};
+
+    if (nav_pvt_data_.flags.diff_soln !=1) {
+        return modes[0];
+    }
+    std::string mode;
+    const uint16_t carrier_soln = static_cast<uint16_t>(nav_pvt_data_.flags.carr_soln);
+    switch(carrier_soln) {
+        case 0:
+        mode = modes[1];
+        break;
+        case 1:
+        mode = modes[2];
+        break;
+        case 2:
+        mode = modes[3];
+        break;
+        default:
+        mode = modes[1];
+        break;
+
+    }
+
+    return mode; 
+}
+
+uint8_t UbloxParser::correctionAge() {
+
+    uint8_t age;
+
+    std::cout << "flags3.word = 0x"
+          << std::hex << nav_pvt_data_.flags3.word
+          << std::dec << "\n";
+    switch(nav_pvt_data_.flags3.last_correction_age){
+        case 0:
+        // flag 0 means "not available", so return max value
+        age = 255U;
+        break;
+
+        case 1:
+        age = 0U;
+        break;
+
+        case 2:
+        age = 1U;
+        break;
+
+        case 3:
+        age = 2U;
+        break;
+
+        case 4: 
+        age = 5U;
+        break;
+
+        case 5: 
+        age = 10U;
+        break;
+
+        case 6: 
+        age = 15U;
+        break; 
+
+        case 7:
+        age = 20U;
+        break;
+
+        case 8: 
+        age = 30U;
+        break;
+
+        case 9:
+        age = 45U;
+        break; 
+
+        case 10:
+        age = 60U;
+        break;
+
+        case 11:
+        age = 90U;
+        break;
+
+        case 12: //intentional fall-through
+        default: 
+        age = 120U;
+        break;
+
+    }
+    return age; 
 }
 
 void UbloxParser::reset() {}

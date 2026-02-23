@@ -39,6 +39,15 @@ struct UbxNavPvtMsg {
         uint8_t word;
     };
 
+    union Flags3 {
+        struct {
+            uint16_t invalid_llh: 1;
+            uint16_t last_correction_age: 4;
+            uint16_t reserved: 11; 
+        };
+        uint16_t word;
+    };
+
     le_uint32_t itow;
     le_uint16_t year;
     uint8_t month;
@@ -67,7 +76,8 @@ struct UbxNavPvtMsg {
     le_uint32_t speed_acc;
     le_uint32_t heading_acc;
     le_uint16_t position_dop;
-    std::array<uint8_t, 6> reserved;
+    Flags3 flags3;
+    std::array<uint8_t, 4> reserved;
     le_int32_t heading_vehicle;
     le_int16_t magnetic_declination;
     le_uint16_t magnetic_declination_acc; 

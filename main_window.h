@@ -36,6 +36,7 @@ private:
     QLabel* time_value_ = nullptr;
     QLabel* odo_value_ = nullptr;
     QLabel* fix_value_ = nullptr;
+    QLabel* sv_value_ = nullptr; 
 
     QTimer ui_timer_;
 
