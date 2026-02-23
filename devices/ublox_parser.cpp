@@ -190,9 +190,9 @@ uint8_t UbloxParser::correctionAge() {
 
     uint8_t age;
 
-    std::cout << "flags3.word = 0x"
-          << std::hex << nav_pvt_data_.flags3.word
-          << std::dec << "\n";
+    // std::cout << "flags3.word = 0x"
+    //       << std::hex << nav_pvt_data_.flags3.word
+    //       << std::dec << "\n";
     switch(nav_pvt_data_.flags3.last_correction_age){
         case 0:
         // flag 0 means "not available", so return max value

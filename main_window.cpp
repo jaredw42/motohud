@@ -137,10 +137,10 @@ QWidget* MainWindow::buildPage1()
     QLabel* speed_secondary = nullptr;
     QLabel* heading_secondary = nullptr;
 
-    auto* speedTile   = makeTile("miles per hour", 64, 16,
+    auto* speedTile   = makeTile("miles per hour", 108, 16,
                                  &speed_value_, &speed_secondary);
 
-    auto* headingTile = makeTile("compass", 84, 36,
+    auto* headingTile = makeTile("compass", 96, 36,
                                  &heading_value_, &heading_secondary);
 
     heading_degrees_value_ = heading_secondary;
@@ -156,16 +156,17 @@ QWidget* MainWindow::buildPage1()
     QLabel* odo_secondary  = nullptr;
     QLabel* fix_secondary  = nullptr;
 
-    auto* timeTile = makeTile("time", 20, 12,
+    auto* timeTile = makeTile("time", 36, 18,
                               &time_value_, &time_secondary);
 
     auto* odoTile  = makeTile("odo", 36, 12,
                               &odo_value_, &odo_secondary);
 
-    auto* fixTile  = makeTile("sats", 36, 12,
+    auto* fixTile  = makeTile("sats", 36, 18,
                               &sv_value_, &fix_secondary);
     
     fix_value_ = fix_secondary; 
+    date_value_ = time_secondary; 
     auto* bottom = new QGridLayout;
     bottom->setContentsMargins(0, 0, 0, 0);
     bottom->setSpacing(0);
@@ -215,7 +216,8 @@ void MainWindow::onUiTick()
 
     const GnssPvt& s = gnss_->state();
 
-    speed_value_->setText(QString::number(s.sog_mph, 'f', 3));
+    // speed_value_->setText(QString::number(s.sog_mph, 'f', 0));
+    speed_value_->setText(QString::number(fake_speed_val_, 'f', 0));
 
     heading_value_->setText(s.cardinal_direction);
 
@@ -232,7 +234,7 @@ void MainWindow::onUiTick()
 
     QDateTime datetime(date, time, Qt::UTC);
 
-    time_value_->setText(datetime.toLocalTime().toString("hh:mm:ss\nyyyy-MM-dd"));
+    time_value_->setText(datetime.toLocalTime().toString("hh:mm:ss"));
     odo_value_->setText(QString::number(odo_distance_, 'f', 1));
     sv_value_->setText(QString::number(s.num_sv));
 
@@ -245,7 +247,13 @@ void MainWindow::onUiTick()
         fix_value_->setVisible(true);
     }
 
+    if (date_value_ != nullptr) {
+        date_value_->setText(datetime.toLocalTime().toString("yyyy-MM-dd"));
+        date_value_->setVisible(true);
+    }
+
     odo_distance_ += 0.02;
+    fake_speed_val_ += 0.02;
 }
 
 void MainWindow::showPrevPage()

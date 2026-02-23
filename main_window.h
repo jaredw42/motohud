@@ -34,6 +34,7 @@ private:
     QLabel* heading_value_ = nullptr;
     QLabel* heading_degrees_value_ = nullptr;
     QLabel* time_value_ = nullptr;
+    QLabel* date_value_ = nullptr; 
     QLabel* odo_value_ = nullptr;
     QLabel* fix_value_ = nullptr;
     QLabel* sv_value_ = nullptr; 
@@ -43,4 +44,5 @@ private:
     GnssClient* gnss_ = nullptr;
 
     float odo_distance_{};
+    float fake_speed_val_{};
 };
