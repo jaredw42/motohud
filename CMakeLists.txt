@@ -16,14 +16,16 @@ set(SOURCES
     main_window.cpp
     devices/gnss_client.cpp
     devices/ublox_parser.cpp
-    widgets/run_1.cpp
+    widgets/speedometer_compass.cpp
+    widgets/gnss_status.cpp
 )
 
 set(HEADERS
     main_window.h
     devices/gnss_client.h
     devices/ublox_parser.h
-    widgets/run_1.h
+    widgets/speedometer_compass.h
+    widgets/gnss_status.h
 )
 
 # Create executable

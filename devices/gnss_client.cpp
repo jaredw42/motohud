@@ -2,7 +2,8 @@
 
 #include <cmath>
 #include <iostream>
-
+#include <array>
+#include <boost/math/constants/constants.hpp>
 
 GnssClient::GnssClient(QObject* parent)
     : QObject(parent)
@@ -108,4 +109,36 @@ QString GnssClient::degreesToCardinal(const float degrees) {
     // offset by half the sector so boundaries map correctly 
     uint8_t index = static_cast<uint8_t>((degrees + sector / 2.0) / sector) % directions.size();
     return directions[index];
+}
+
+std::array<float, 3> GnssClient::geodetic2Ned(float lat1, float lon1, float h1, float lat2, float lon2, float h2)
+{
+    constexpr float deg2rad =
+        boost::math::constants::pi<float>() / 180.0f;
+
+    // WGS-84
+    constexpr float a = 6378137.0f;                // semi-major axis (m)
+    constexpr float f = 1.0f / 298.257223563f;     // flattening.
+    constexpr float e2 = f * (2.0f - f);           // eccentricity²
+
+     lat1 = lat1 * deg2rad;
+     lat2 = lat2 * deg2rad;
+     lon1 = lon1 * deg2rad;
+     lon2 = lon2 * deg2rad;
+
+    const float d_lat = lat2 - lat1;
+    const float d_lon = lon2 - lon1;
+
+    const float sin_lat = std::sin(lat1);
+    const float cos_lat = std::cos(lat1);
+
+    const float w  = std::sqrt(1.0f - e2 * sin_lat * sin_lat);
+    const float Rn = a / w;
+    const float Rm = a * (1.0f - e2) / (w * w * w);
+
+    return {
+        d_lat * (Rm + h1),              // North
+        d_lon * (Rn + h1) * cos_lat,    // East
+        -(h2 - h1)                      // Down
+    };
 }

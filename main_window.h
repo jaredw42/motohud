@@ -1,48 +1,43 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QTimer>
 #include <QStackedWidget>
 #include <QPushButton>
-class QLabel;
-class GnssClient;  
+#include <QTimer>
 
-class MainWindow final : public QMainWindow
+#include "devices/gnss_client.h"
+#include "widgets/speedometer_compass.h"
+#include "widgets/gnss_status.h"
+
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow() override = default;
+
 protected:
-bool event(QEvent* e) override;
+    bool event(QEvent* e) override;
+
 private slots:
-    void onUiTick();   
+    void onUiTick();
     void showPrevPage();
     void showNextPage();
 
 private:
     void buildUi();
-    QWidget* buildPage1();   
-    QWidget* buildPage2();  
 
+private:
     QStackedWidget* pages_ = nullptr;
     QPushButton* prev_btn_ = nullptr;
     QPushButton* next_btn_ = nullptr;
-    
-    QLabel* speed_value_ = nullptr;
-    QLabel* heading_value_ = nullptr;
-    QLabel* heading_degrees_value_ = nullptr;
-    QLabel* time_value_ = nullptr;
-    QLabel* date_value_ = nullptr; 
-    QLabel* odo_value_ = nullptr;
-    QLabel* fix_value_ = nullptr;
-    QLabel* sv_value_ = nullptr; 
 
-    QTimer ui_timer_;
+    SpeedometerCompass* speedometer_compass_ = nullptr;
+    GnssStatus* gnss_status_ = nullptr;
 
     GnssClient* gnss_ = nullptr;
+    QTimer ui_timer_;
 
-    float odo_distance_{};
-    float fake_speed_val_{};
+    float odo_distance_ = 0.0f;
+    float fake_speed_val_ = 0.0f;
 };

@@ -62,4 +62,5 @@ private:
 
     void updateGnssPvt();
     QString degreesToCardinal(const float degrees);
+    std::array<float, 3> geodetic2Ned(float lat1, float lon1, float h1, float lat2, float lon2, float h2);
 };
