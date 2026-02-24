@@ -1,5 +1,7 @@
 #include "main_window.h"
 
+#include <cstdlib>
+
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -36,15 +38,20 @@ void MainWindow::buildUi()
 
     prev_btn_ = new QPushButton("◀", root);
     next_btn_ = new QPushButton("▶", root);
+    exit_btn_ = new QPushButton("EXIT APP");
 
     connect(prev_btn_, &QPushButton::clicked, this, &MainWindow::showPrevPage);
     connect(next_btn_, &QPushButton::clicked, this, &MainWindow::showNextPage);
+    connect(exit_btn_, &QPushButton::clicked, this, &MainWindow::exitApplication);
 
     auto* nav = new QHBoxLayout;
     nav->setContentsMargins(4, 2, 4, 2);
     nav->setSpacing(6);
+
     nav->addWidget(prev_btn_);
-    nav->addStretch(1);
+    nav->addStretch(1);        // left flexible space
+    nav->addWidget(exit_btn_); // centered
+    nav->addStretch(1);        // right flexible space
     nav->addWidget(next_btn_);
 
     auto* outer = new QVBoxLayout(root);
@@ -112,4 +119,9 @@ bool MainWindow::event(QEvent* e)
     }
 
     return QMainWindow::event(e);
+}
+
+void MainWindow::exitApplication() {
+
+    std::exit(EXIT_SUCCESS);
 }

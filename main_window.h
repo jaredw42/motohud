@@ -26,11 +26,13 @@ private slots:
 
 private:
     void buildUi();
+    void exitApplication();
 
 private:
     QStackedWidget* pages_ = nullptr;
     QPushButton* prev_btn_ = nullptr;
     QPushButton* next_btn_ = nullptr;
+    QPushButton* exit_btn_ = nullptr; 
 
     SpeedometerCompass* speedometer_compass_ = nullptr;
     GnssStatus* gnss_status_ = nullptr;
