@@ -1,5 +1,8 @@
 #include "widgets/gnss_status.h"
 
+#include <QHBoxLayout>
+#include <QHostAddress>
+#include <QIntValidator>
 #include <QVBoxLayout>
 
 static QFrame *makeTile(const QString &title, int primaryPt, int secondaryPt,
@@ -126,6 +129,61 @@ void GnssStatus::buildUi() {
   v->setContentsMargins(4, 2, 4, 2);
   v->setSpacing(0);
   v->addLayout(top, 2);
+
+  auto *connection_layout = new QHBoxLayout;
+  connection_layout->setContentsMargins(0, 4, 0, 0);
+  connection_layout->setSpacing(6);
+
+  auto *ip_address_label = new QLabel(tr("IP address:"), this);
+  ip_address_input_ = new QLineEdit(this);
+  ip_address_input_->setPlaceholderText(tr("127.0.0.1"));
+  ip_address_label->setBuddy(ip_address_input_);
+
+  auto *port_label = new QLabel(tr("Port:"), this);
+  port_input_ = new QLineEdit(this);
+  port_input_->setValidator(new QIntValidator(1, 65535, port_input_));
+  port_input_->setMaxLength(5);
+  port_input_->setInputMethodHints(Qt::ImhDigitsOnly);
+  port_label->setBuddy(port_input_);
+
+  connection_layout->addWidget(ip_address_label);
+  connection_layout->addWidget(ip_address_input_, 1);
+  connection_layout->addWidget(port_label);
+  connection_layout->addWidget(port_input_);
+  v->addLayout(connection_layout);
+
+  connect(ip_address_input_, &QLineEdit::editingFinished, this,
+          &GnssStatus::applyConnectionSettings);
+  connect(port_input_, &QLineEdit::editingFinished, this,
+          &GnssStatus::applyConnectionSettings);
+}
+
+void GnssStatus::setConnectionEndpoint(const QString &host, quint16 port) {
+  connection_host_ = host;
+  connection_port_ = port;
+  if (ip_address_input_)
+    ip_address_input_->setText(host);
+  if (port_input_)
+    port_input_->setText(QString::number(port));
+}
+
+void GnssStatus::applyConnectionSettings() {
+  const QString host = ip_address_input_->text().trimmed();
+  QHostAddress address;
+  if (!address.setAddress(host))
+    return;
+
+  bool port_is_valid = false;
+  const uint port_value = port_input_->text().toUInt(&port_is_valid);
+  if (!port_is_valid || port_value < 1 || port_value > 65535)
+    return;
+
+  const quint16 port = static_cast<quint16>(port_value);
+  if (host == connection_host_ && port == connection_port_)
+    return;
+
+  setConnectionEndpoint(host, port);
+  emit connectionRequested(connection_host_, connection_port_);
 }
 
 void GnssStatus::setDisconnected() {

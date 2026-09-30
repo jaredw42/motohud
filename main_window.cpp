@@ -12,7 +12,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   buildUi();
 
   gnss_ = new GnssClient(this);
-  gnss_->connectTcp("127.0.0.1", 8100);
+  const QString gnss_host = QStringLiteral("127.0.0.1");
+  constexpr quint16 gnss_port = 8100;
+  gnss_status_->setConnectionEndpoint(gnss_host, gnss_port);
+  gnss_->connectTcp(gnss_host, gnss_port);
 
   ui_timer_.setInterval(200); // 5 Hz
   connect(&ui_timer_, &QTimer::timeout, this, &MainWindow::onUiTick);
@@ -29,6 +32,8 @@ void MainWindow::buildUi() {
   speedometer_config_ =
       new SpeedometerCompassConfig(pages_, speedometer_compass_);
   gnss_status_ = new GnssStatus(pages_);
+  connect(gnss_status_, &GnssStatus::connectionRequested, this,
+          &MainWindow::connectGnss);
 
   pages_->addWidget(speedometer_compass_);
   pages_->addWidget(speedometer_config_);
@@ -80,6 +85,11 @@ void MainWindow::onUiTick() {
 
   if (gnss_status_)
     gnss_status_->updateDisplay(gnss_state);
+}
+
+void MainWindow::connectGnss(const QString &host, quint16 port) {
+  if (gnss_)
+    gnss_->connectTcp(host, port);
 }
 
 void MainWindow::showPrevPage() {

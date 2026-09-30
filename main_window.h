@@ -21,6 +21,7 @@ protected:
 
 private slots:
   void onUiTick();
+  void connectGnss(const QString &host, quint16 port);
   void showPrevPage();
   void showNextPage();
 

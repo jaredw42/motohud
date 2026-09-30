@@ -99,21 +99,20 @@ public:
 };
 
 struct NamedColor {
-  const char* name;
+  const char *name;
   QColor color;
 };
 
 static const NamedColor kNamedColors[] = {
-  {"Black", QColor("#000000")},
-  {"Dark Gray", QColor("#202020")},
-  {"Slate", QColor("#2F4F4F")},
-  {"Navy", QColor("#001f3f")},
-  {"Maroon", QColor("#800000")},
-  {"Dark Green", QColor("#004d00")},
-  {"White", QColor("#FFFFFF")},
-  {"Red", QColor("#FF0000")},
-  {"MediumSpringGreen", QColor("#00FA9A")},
-  {"LightSeaGreen", QColor("#20B2AA")},
-  {"SteelBlue", QColor("#4682B4")},
-  {"DeepSkyBlue", QColor("#00BFF")}
-};
+    {"Black", QColor("#000000")},
+    {"Dark Gray", QColor("#202020")},
+    {"Slate", QColor("#2F4F4F")},
+    {"Navy", QColor("#001f3f")},
+    {"Maroon", QColor("#800000")},
+    {"Dark Green", QColor("#004d00")},
+    {"White", QColor("#FFFFFF")},
+    {"Red", QColor("#FF0000")},
+    {"MediumSpringGreen", QColor("#00FA9A")},
+    {"LightSeaGreen", QColor("#20B2AA")},
+    {"SteelBlue", QColor("#4682B4")},
+    {"DeepSkyBlue", QColor("#00BFF")}};
