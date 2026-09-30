@@ -6,7 +6,7 @@
 LcdDisplay::LcdDisplay(QWidget *parent) : QWidget(parent) {
 
   static constexpr auto kLCDNumberStyleSheet =
-      "QLCDNumber { color: deepskyblue; background-color: black; }";
+      "QLCDNumber { color: firebrick; background-color: black; }";
   gps_towsec_ = new QLCDNumber(this);
   gps_towsec_->setDigitCount(6);
   gps_towsec_->setStyleSheet(kLCDNumberStyleSheet);

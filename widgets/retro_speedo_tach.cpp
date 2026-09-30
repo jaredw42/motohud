@@ -17,12 +17,13 @@
 #include <QVBoxLayout>
 #include <QtMath>
 namespace {
-constexpr int kSegmentCount = 36;
-constexpr int kSpeedMaximumMph = 120;
-constexpr int kSpeedTickIntervalMph = 20;
-constexpr int kTachMaximumRpm = 6500;
-constexpr int kTachRedlineRpm = 5500;
-constexpr int kTachTickIntervalRpm = 1000;
+constexpr int kSpeedSegmentCount = 40;
+constexpr int kTachSegmentCount = 39;
+constexpr uint16_t kSpeedMaximumMph = 120;
+constexpr uint16_t kSpeedTickIntervalMph = 20;
+constexpr uint16_t kTachMaximumRpm = 6500;
+constexpr uint16_t kTachRedlineRpm = 6000;
+constexpr uint16_t kTachTickIntervalRpm = 1000;
 constexpr int kCurveLengthSamples = 128;
 constexpr double kMetersPerMile = 1609.344;
 constexpr double kCurveNormalSample = 0.001;
@@ -38,10 +39,35 @@ struct GaugeCurve {
   QPointF end;
 };
 
+enum class CurveSpacing { UniformParameter, UniformDistance };
+
+struct GaugeConfig {
+  QString title;
+  uint16_t maximum;
+  uint16_t redline;
+  uint16_t tick_interval;
+  int segment_count;
+  int lcd_digits;
+  int tick_label_divisor;
+  double bar_thickness_fraction;
+  double minimum_tick_label_width;
+  double bar_rotation_degrees;
+  CurveSpacing curve_spacing;
+  const GaugeCurve *curve;
+};
+
 const GaugeCurve kSpeedCurve{QPointF(0.22, 0.88), QPointF(0.22, 0.48),
-                             QPointF(0.68, 0.22), QPointF(0.68, 0.20)};
+                             QPointF(0.84, 0.22), QPointF(0.84, 0.12)};
 const GaugeCurve kTachCurve{QPointF(0.17, 0.84), QPointF(0.20, 0.55),
                             QPointF(0.67, 0.17), QPointF(0.85, 0.30)};
+const GaugeConfig kSpeedGaugeConfig{
+  QStringLiteral("MPH"), kSpeedMaximumMph, 0, kSpeedTickIntervalMph,
+  kSpeedSegmentCount, 3, 1, 0.014, 36.0, 0.0,
+  CurveSpacing::UniformDistance, &kSpeedCurve};
+const GaugeConfig kTachGaugeConfig{
+  QStringLiteral("RPMx100"), kTachMaximumRpm, kTachRedlineRpm,
+  kTachTickIntervalRpm, kTachSegmentCount, 4, 100, 0.018, 64.0, 90.0,
+  CurveSpacing::UniformParameter, &kTachCurve};
 
 QPointF cubicPoint(const GaugeCurve &curve, double fraction) {
   const double inverse = 1.0 - fraction;
@@ -51,21 +77,22 @@ QPointF cubicPoint(const GaugeCurve &curve, double fraction) {
          curve.end * (fraction * fraction * fraction);
 }
 
-QPointF rawGaugePoint(const QSize &size, double fraction, bool tachometer) {
-  const GaugeCurve &curve = tachometer ? kTachCurve : kSpeedCurve;
+QPointF rawGaugePoint(const QSize &size, double fraction,
+                      const GaugeCurve &curve) {
   const QPointF point = cubicPoint(curve, fraction);
   return QPointF(point.x() * size.width(), point.y() * size.height());
 }
 
-double speedCurveParameter(const QSize &size, double distance_fraction) {
+double curveParameterAtDistance(const QSize &size, double distance_fraction,
+                                const GaugeCurve &curve) {
   if (distance_fraction <= 0.0 || distance_fraction >= 1.0)
     return distance_fraction;
 
   std::array<double, kCurveLengthSamples + 1> cumulative_lengths{};
-  QPointF previous_point = rawGaugePoint(size, 0.0, false);
+  QPointF previous_point = rawGaugePoint(size, 0.0, curve);
   for (int sample = 1; sample <= kCurveLengthSamples; ++sample) {
     const double parameter = static_cast<double>(sample) / kCurveLengthSamples;
-    const QPointF point = rawGaugePoint(size, parameter, false);
+    const QPointF point = rawGaugePoint(size, parameter, curve);
     const QPointF delta = point - previous_point;
     cumulative_lengths[sample] =
         cumulative_lengths[sample - 1] + std::hypot(delta.x(), delta.y());
@@ -85,17 +112,21 @@ double speedCurveParameter(const QSize &size, double distance_fraction) {
   return (lower_index + segment_fraction) / kCurveLengthSamples;
 }
 
-QPointF gaugePoint(const QSize &size, double fraction, bool tachometer) {
+QPointF gaugePoint(const QSize &size, double fraction,
+                   const GaugeConfig &config) {
   const double parameter =
-      tachometer ? fraction : speedCurveParameter(size, fraction);
-  return rawGaugePoint(size, parameter, tachometer);
+      config.curve_spacing == CurveSpacing::UniformDistance
+          ? curveParameterAtDistance(size, fraction, *config.curve)
+          : fraction;
+  return rawGaugePoint(size, parameter, *config.curve);
 }
 
-QPointF gaugeNormal(const QSize &size, double fraction, bool tachometer) {
+QPointF gaugeNormal(const QSize &size, double fraction,
+                    const GaugeConfig &config) {
   const double before_fraction = qMax(0.0, fraction - kCurveNormalSample);
   const double after_fraction = qMin(1.0, fraction + kCurveNormalSample);
-  const QPointF tangent = gaugePoint(size, after_fraction, tachometer) -
-                          gaugePoint(size, before_fraction, tachometer);
+  const QPointF tangent = gaugePoint(size, after_fraction, config) -
+                          gaugePoint(size, before_fraction, config);
   const double length = std::hypot(tangent.x(), tangent.y());
   if (length == 0.0)
     return QPointF(0.0, 0.0);
@@ -106,13 +137,12 @@ QPointF gaugeNormal(const QSize &size, double fraction, bool tachometer) {
 
 class RetroGauge : public QWidget {
 public:
-  RetroGauge(const QString &title, double maximum, double redline,
-             QWidget *parent = nullptr)
-      : QWidget(parent), title_(title), maximum_(maximum), redline_(redline) {
+  explicit RetroGauge(const GaugeConfig &config, QWidget *parent = nullptr)
+      : QWidget(parent), config_(config) {
     setMinimumSize(320, 180);
 
     value_display_ = new QLCDNumber(this);
-    value_display_->setDigitCount(redline_ > 0.0 ? 4 : 3);
+    value_display_->setDigitCount(config_.lcd_digits);
     value_display_->setSegmentStyle(QLCDNumber::Flat);
     value_display_->setStyleSheet(
         "QLCDNumber { color: #D8DD43; background-color: #100D04; "
@@ -120,10 +150,10 @@ public:
     value_display_->display(QStringLiteral("---"));
   }
 
-  void setValue(double value) {
-    value_ = std::clamp(value, 0.0, maximum_);
+  void setValue(uint16_t value) {
+    value_ = std::min(value, config_.maximum);
     available_ = true;
-    value_display_->display(QString::number(qRound(value_)));
+    value_display_->display(value_);
     update();
   }
 
@@ -158,25 +188,29 @@ protected:
     title_font.setPixelSize(qBound(20, width() / 14, 32));
     painter.setFont(title_font);
     painter.setPen(QColor("#E8B52B"));
-    painter.drawText(QRectF(0.0, 12.0, width(), 30.0), Qt::AlignCenter, title_);
+    painter.drawText(QRectF(0.0, 12.0, width(), 30.0), Qt::AlignCenter,
+             config_.title);
 
     const double band_width =
         qMax(kMinimumBandWidth, qMin(width() * kBandWidthFromGaugeWidth,
                                      height() * kBandWidthFromGaugeHeight));
-    const double bar_thickness = qMax(6.0, height() * 0.018);
-    const bool tachometer = redline_ > 0.0;
-    const double filled_fraction = available_ ? value_ / maximum_ : 0.0;
-    const double segment_gap = kSegmentGapFraction / kSegmentCount;
+    const double bar_thickness =
+        qMax(5.0, height() * config_.bar_thickness_fraction);
+    const double filled_fraction =
+        available_ ? static_cast<double>(value_) / config_.maximum : 0.0;
+    const double segment_gap =
+      kSegmentGapFraction / config_.segment_count;
 
-    for (int index = 0; index < kSegmentCount; ++index) {
+    for (int index = 0; index < config_.segment_count; ++index) {
       const double first_fraction =
-          static_cast<double>(index) / kSegmentCount + segment_gap * 0.5;
+          static_cast<double>(index) / config_.segment_count + segment_gap * 0.5;
       const double last_fraction =
-          static_cast<double>(index + 1) / kSegmentCount - segment_gap * 0.5;
+          static_cast<double>(index + 1) / config_.segment_count - segment_gap * 0.5;
       const double middle_fraction = (first_fraction + last_fraction) * 0.5;
       const bool active = available_ && middle_fraction <= filled_fraction;
       const bool redline_segment =
-          redline_ > 0.0 && middle_fraction * maximum_ > redline_;
+          config_.redline > 0 &&
+          middle_fraction * config_.maximum > config_.redline;
 
       QColor segment_color("#34320F");
       if (redline_segment)
@@ -184,47 +218,40 @@ protected:
       else if (active)
         segment_color = QColor("#D8DD43");
 
-      const QPointF point = gaugePoint(size(), middle_fraction, tachometer);
-      const QRectF bar = tachometer ? QRectF(point.x() - bar_thickness * 0.5,
-                                             point.y() - band_width * 0.5,
-                                             bar_thickness, band_width)
-                                    : QRectF(point.x() - band_width * 0.5,
-                                             point.y() - bar_thickness * 0.5,
-                                             band_width, bar_thickness);
+      const QPointF point = gaugePoint(size(), middle_fraction, config_);
       painter.setPen(Qt::NoPen);
       painter.setBrush(segment_color);
-      painter.drawRect(bar);
+      painter.save();
+      painter.translate(point);
+      painter.rotate(config_.bar_rotation_degrees);
+      painter.drawRect(QRectF(-band_width * 0.5, -bar_thickness * 0.5,
+                              band_width, bar_thickness));
+      painter.restore();
     }
 
     QFont scale_font = painter.font();
     scale_font.setPixelSize(qBound(16, width() / 18, 22));
     painter.setFont(scale_font);
     painter.setPen(QColor("#E8B52B"));
-    const int maximum_value = qRound(maximum_);
-    const int tick_step =
-        tachometer ? kTachTickIntervalRpm : kSpeedTickIntervalMph;
-    const bool has_partial_endpoint = maximum_value % tick_step != 0;
-    const int last_regular_tick = has_partial_endpoint
-                                      ? maximum_value / tick_step * tick_step
-                                      : maximum_value;
-    auto drawTick = [&](int tick_value, bool draw_label) {
+    const int maximum_value = config_.maximum;
+    const int tick_step = config_.tick_interval;
+    auto drawTick = [&](int tick_value) {
       const double fraction = static_cast<double>(tick_value) / maximum_value;
-      const QPointF point = gaugePoint(size(), fraction, tachometer);
-      const QPointF normal = gaugeNormal(size(), fraction, tachometer);
+      const QPointF point = gaugePoint(size(), fraction, config_);
+      const QPointF normal = gaugeNormal(size(), fraction, config_);
       const double tick_start = band_width * 0.5 + 4.0;
       const QPointF tick_inner = point + normal * tick_start;
       const QPointF tick_outer = point + normal * (tick_start + 8.0);
       painter.setPen(QPen(QColor("#E8B52B"), 2.0));
       painter.drawLine(tick_inner, tick_outer);
 
-      if (!draw_label)
-        return;
-
       const QPointF label_position = point + normal * (tick_start + 22.0);
-      const QString label = QString::number(tick_value);
+        const QString label =
+            QString::number(tick_value / config_.tick_label_divisor);
       const QFontMetricsF metrics(scale_font);
-      const double label_width = qMax(tachometer ? 64.0 : 36.0,
-                                      metrics.horizontalAdvance(label) + 8.0);
+        const double label_width =
+            qMax(config_.minimum_tick_label_width,
+                 metrics.horizontalAdvance(label) + 8.0);
       QRectF label_rect(label_position.x() - label_width * 0.5,
                         label_position.y() - metrics.height() * 0.5,
                         label_width, metrics.height());
@@ -236,21 +263,14 @@ protected:
       painter.drawText(label_rect, Qt::AlignCenter, label);
     };
 
-    for (int tick_value = 0; tick_value <= last_regular_tick;
-         tick_value += tick_step) {
-      const bool skip_label_for_endpoint_spacing =
-          has_partial_endpoint && tick_value == last_regular_tick;
-      drawTick(tick_value, !skip_label_for_endpoint_spacing);
-    }
-    if (has_partial_endpoint)
-      drawTick(maximum_value, true);
+    for (int tick_value = 0; tick_value <= maximum_value;
+         tick_value += tick_step)
+      drawTick(tick_value);
   }
 
 private:
-  QString title_;
-  double maximum_;
-  double redline_;
-  double value_ = 0.0;
+  const GaugeConfig &config_;
+  uint16_t value_ = 0;
   bool available_ = false;
   QLCDNumber *value_display_ = nullptr;
 };
@@ -258,9 +278,8 @@ private:
 RetroSpeedoTach::RetroSpeedoTach(QWidget *parent) : QWidget(parent) {
   setStyleSheet("RetroSpeedoTach { background-color: #100D04; }");
 
-  speed_gauge_ = new RetroGauge(tr("MPH"), kSpeedMaximumMph, 0.0, this);
-  tach_gauge_ =
-      new RetroGauge(tr("RPM"), kTachMaximumRpm, kTachRedlineRpm, this);
+  speed_gauge_ = new RetroGauge(kSpeedGaugeConfig, this);
+  tach_gauge_ = new RetroGauge(kTachGaugeConfig, this);
 
   auto *center = new QWidget(this);
   center->setStyleSheet("QWidget { background-color: #100D04; }");
@@ -320,11 +339,13 @@ void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
   }
   dummy_speed_++;
   dummy_rpm_ += 81;
+  dummy_odo_ += 0.1 ; 
   speed_gauge_->setValue(dummy_speed_);
   setEngineRpm(dummy_rpm_);
 
   mileage_display_->display(
-      QString::number(gnss_state.odometer_m / kMetersPerMile, 'f', 1));
+    //   QString::number(gnss_state.odometer_m / kMetersPerMile, 'f', 1));
+       QString::number(dummy_odo_, 'f', 1));
 
   const auto &utc = gnss_state.utc_datetime;
   const QDate date(utc[0], utc[1], utc[2]);
