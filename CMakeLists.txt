@@ -17,6 +17,7 @@ set(SOURCES
     devices/gnss_client.cpp
     devices/ublox_parser.cpp
     widgets/speedometer_compass.cpp
+    widgets/speedometer_compass_config.cpp
     widgets/gnss_status.cpp
 )
 
@@ -25,7 +26,9 @@ set(HEADERS
     devices/gnss_client.h
     devices/ublox_parser.h
     widgets/speedometer_compass.h
+    widgets/speedometer_compass_config.h
     widgets/gnss_status.h
+    widgets/tile.h
 )
 
 # Create executable

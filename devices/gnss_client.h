@@ -1,66 +1,79 @@
 #pragma once
 
-#include <chrono>
 #include <QObject>
-#include <QTcpSocket>
 #include <QString>
+#include <QTcpSocket>
+#include <chrono>
 
 #include "ublox_parser.h"
 
 class GnssPvt {
-    public:
-    float latitude; // decimal degrees
-    float longitude; // decimal degrees
-    float height_ellipsoid; // meters
-    float height_msl; // meters
-    float velocity_n; // meters per second
-    float velocity_e; // meters per second
-    float velocity_d; // meters per second
-    float velocity_2d; // meters per second
-    float velocity_3d; // meters per second
+public:
+  float latitude;         // decimal degrees
+  float longitude;        // decimal degrees
+  float height_ellipsoid; // meters
+  float height_msl;       // meters
+  float velocity_n;       // meters per second
+  float velocity_e;       // meters per second
+  float velocity_d;       // meters per second
+  float velocity_2d;      // meters per second
+  float velocity_3d;      // meters per second
 
-    float sog_mph; // miles per hour
-    float heading; // degrees 
-    QString cardinal_direction; 
+  float sog_mph;                           // miles per hour
+  float estimated_speed_accuracy;          // miles per hour
+  float estimated_horizontal_pos_accuracy; // meters
+  float heading;                           // degrees
 
-    uint32_t gps_tow_ms;
-    std::chrono::utc_time<std::chrono::milliseconds> utc_time;
-    std::array<uint16_t, 6> utc_datetime;
+  QString cardinal_direction;
 
-    uint8_t num_sv;
-    uint8_t correction_age; 
-    std::string differential_mode; 
+  uint32_t gps_tow_ms;
+  std::chrono::utc_time<std::chrono::milliseconds> utc_time;
+  std::array<uint16_t, 6> utc_datetime;
 
+  uint8_t num_sv;
+  uint8_t correction_age;
+  std::string differential_mode;
+  float odometer_m;
 
+  std::array<float, 5> baseline_ned; // meters
 };
 
-class GnssClient final : public QObject
-{
-    Q_OBJECT
+class GnssSat {
 public:
-    explicit GnssClient(QObject* parent = nullptr);
+  uint8_t sats_used_for_nav;
+  uint8_t sats_tracked;
+};
 
-    void connectTcp(const QString& host, quint16 port);
-    void disconnect();
+class GnssClient final : public QObject {
+  Q_OBJECT
+public:
+  explicit GnssClient(QObject *parent = nullptr);
 
-    bool isConnected() const;
-    QString lastErrorString() const;
+  void connectTcp(const QString &host, quint16 port);
+  void disconnect();
 
-    // UI polls at 5 Hz
-    const GnssPvt& state() const { return state_; }
+  bool isConnected() const;
+  QString lastErrorString() const;
+
+  // UI polls at 5 Hz
+  const GnssPvt &state() const { return state_; }
 
 private slots:
-    void onReadyRead();
-    void onSocketError(QAbstractSocket::SocketError);
+  void onReadyRead();
+  void onSocketError(QAbstractSocket::SocketError);
 
 private:
-    QTcpSocket socket_;
-    QString last_error_;
+  QTcpSocket socket_;
+  QString last_error_;
 
-    UbloxParser ublox_parser_;
-    GnssPvt state_;
+  UbloxParser ublox_parser_;
+  GnssPvt state_;
+  GnssPvt previous_state_;
 
-    void updateGnssPvt();
-    QString degreesToCardinal(const float degrees);
-    std::array<float, 3> geodetic2Ned(float lat1, float lon1, float h1, float lat2, float lon2, float h2);
+  void updateGnssPvt();
+  QString degreesToCardinal(const float degrees);
+  std::array<float, 3> geodetic2Ned(float lat1, float lon1, float h1,
+                                    float lat2, float lon2, float h2);
+  void updateOdometerDistance(const GnssPvt &current_state,
+                              const GnssPvt &previous_state);
 };

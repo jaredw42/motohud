@@ -28,17 +28,16 @@
 //     return app.exec();
 // }
 
-#include <QApplication>
 #include "main_window.h"
+#include <QApplication>
 
-int main(int argc, char** argv)
-{
-    QApplication app(argc, argv);
+int main(int argc, char **argv) {
+  QApplication app(argc, argv);
 
-    MainWindow w;
-    // w.showFullScreen();   
-    w.resize(800,480);
-    w.show();
+  MainWindow w;
+  // w.showFullScreen();
+  w.resize(800, 480);
+  w.show();
 
-    return app.exec();
+  return app.exec();
 }
