@@ -43,6 +43,22 @@ private:
 
   DynamicTileConfig sv_tile_config_{24, 12, false};
 
+  static constexpr auto kTableStyleSheet = (R"(
+  QTableWidget {
+    color: white;
+    background-color: black;
+    gridline-color: gray;
+  }
+  QHeaderView::section {
+    color: white;
+    background-color: dimgray;
+  }
+  QTableWidget::item:selected {
+    color: black;
+    background-color: lightgreen;
+  }
+)");
+
   QTableWidgetItem *svs_used_for_nav_value_ = nullptr;
   QTableWidgetItem *fix_value_ = nullptr;
   QTableWidgetItem *correction_age_value_ = nullptr;

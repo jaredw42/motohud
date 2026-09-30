@@ -88,6 +88,10 @@ void GnssStatus::buildUi() {
   QStringList fix_table_rows = {"sats used", "fix mode", "correction age",
                                 "est horiz error [m]", "est sog error [mph] "};
   fix_table_->setVerticalHeaderLabels(fix_table_rows);
+  fix_table_->setStyleSheet(kTableStyleSheet);
+
+
+
   // ned component table
   baseline_ = new QTableWidget(5, 2, this);
   baseline_distance_n_ = new QTableWidgetItem("0");
@@ -117,6 +121,7 @@ void GnssStatus::buildUi() {
   QStringList column_names = {"dist [m]", "velocity [m/s]"};
   baseline_->setVerticalHeaderLabels(baseline_names);
   baseline_->setHorizontalHeaderLabels(column_names);
+  baseline_->setStyleSheet(kTableStyleSheet);
 
   auto *top = new QGridLayout;
   top->setContentsMargins(0, 0, 0, 0);
