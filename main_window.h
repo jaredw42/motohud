@@ -28,6 +28,7 @@ private slots:
   void connectGnss(const QString &host, uint16_t port);
   void showPrevPage();
   void showNextPage();
+  void toggleFullscreen();
 
 private:
   void buildUi();
@@ -38,6 +39,7 @@ private:
   QPushButton *prev_btn_ = nullptr;
   QPushButton *next_btn_ = nullptr;
   QPushButton *exit_btn_ = nullptr;
+  QPushButton *fullscreen_btn_ = nullptr;
 
   SpeedometerCompass *speedometer_compass_ = nullptr;
   GnssStatus *gnss_status_ = nullptr;

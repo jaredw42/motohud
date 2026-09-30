@@ -48,10 +48,13 @@ void MainWindow::buildUi() {
   prev_btn_ = new QPushButton("◀", root);
   next_btn_ = new QPushButton("▶", root);
   exit_btn_ = new QPushButton("EXIT APP");
+  fullscreen_btn_ = new QPushButton("FULLSCREEN", root);
 
   connect(prev_btn_, &QPushButton::clicked, this, &MainWindow::showPrevPage);
   connect(next_btn_, &QPushButton::clicked, this, &MainWindow::showNextPage);
   connect(exit_btn_, &QPushButton::clicked, this, &MainWindow::exitApplication);
+  connect(fullscreen_btn_, &QPushButton::clicked, this,
+          &MainWindow::toggleFullscreen);
 
   auto *nav = new QHBoxLayout;
   nav->setContentsMargins(4, 2, 4, 2);
@@ -60,7 +63,8 @@ void MainWindow::buildUi() {
   nav->addWidget(prev_btn_);
   nav->addStretch(1);        // left flexible space
   nav->addWidget(exit_btn_); // centered
-  nav->addStretch(1);        // right flexible space
+  nav->addWidget(fullscreen_btn_);
+  nav->addStretch(1); // right flexible space
   nav->addWidget(next_btn_);
 
   auto *outer = new QVBoxLayout(root);
@@ -119,6 +123,16 @@ void MainWindow::showNextPage() {
   const int n = pages_->count();
   const int i = pages_->currentIndex();
   pages_->setCurrentIndex((i + 1) % n);
+}
+
+void MainWindow::toggleFullscreen() {
+  if (isFullScreen()) {
+    showNormal();
+    fullscreen_btn_->setText("FULLSCREEN");
+  } else {
+    showFullScreen();
+    fullscreen_btn_->setText("RESTORE");
+  }
 }
 
 bool MainWindow::event(QEvent *e) {
