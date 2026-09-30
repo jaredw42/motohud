@@ -90,8 +90,6 @@ void GnssStatus::buildUi() {
   fix_table_->setVerticalHeaderLabels(fix_table_rows);
   fix_table_->setStyleSheet(kTableStyleSheet);
 
-
-
   // ned component table
   baseline_ = new QTableWidget(5, 2, this);
   baseline_distance_n_ = new QTableWidgetItem("0");

@@ -6,12 +6,12 @@
 class QLCDNumber;
 
 class LcdDisplay : public QWidget {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	explicit LcdDisplay(QWidget *parent = nullptr);
-    void updateDisplay(const GnssPvt& gnss_pvt);
+  explicit LcdDisplay(QWidget *parent = nullptr);
+  void updateDisplay(const GnssPvt &gnss_pvt);
+
 private:
-	QLCDNumber *gps_towsec_ = nullptr;
-    
+  QLCDNumber *gps_towsec_ = nullptr;
 };

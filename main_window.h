@@ -10,6 +10,7 @@
 #include "devices/gnss_client.h"
 #include "widgets/gnss_status.h"
 #include "widgets/lcd_display.h"
+#include "widgets/retro_speedo_tach.h"
 #include "widgets/speedometer_compass.h"
 #include "widgets/speedometer_compass_config.h"
 
@@ -41,6 +42,7 @@ private:
   SpeedometerCompass *speedometer_compass_ = nullptr;
   GnssStatus *gnss_status_ = nullptr;
   LcdDisplay *lcd_display_ = nullptr;
+  RetroSpeedoTach *retro_speedo_tach_ = nullptr;
   SpeedometerCompassConfig *speedometer_config_ = nullptr;
   GnssClient *gnss_ = nullptr;
 

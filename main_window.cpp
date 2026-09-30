@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   buildUi();
 
   gnss_ = new GnssClient(this);
-  const QString gnss_host = QStringLiteral("127.0.0.1");
+  const QString gnss_host = QStringLiteral("192.168.0.166");
   constexpr uint16_t gnss_port = 8100;
   gnss_status_->setConnectionEndpoint(gnss_host, gnss_port);
   gnss_->connectTcp(gnss_host, gnss_port);
@@ -33,6 +33,7 @@ void MainWindow::buildUi() {
       new SpeedometerCompassConfig(pages_, speedometer_compass_);
   gnss_status_ = new GnssStatus(pages_);
   lcd_display_ = new LcdDisplay(pages_);
+  retro_speedo_tach_ = new RetroSpeedoTach(pages_);
   connect(gnss_status_, &GnssStatus::connectionRequested, this,
           &MainWindow::connectGnss);
 
@@ -40,6 +41,7 @@ void MainWindow::buildUi() {
   pages_->addWidget(speedometer_config_);
   pages_->addWidget(gnss_status_);
   pages_->addWidget(lcd_display_);
+  pages_->addWidget(retro_speedo_tach_);
 
   pages_->grabGesture(Qt::SwipeGesture);
 
@@ -77,6 +79,8 @@ void MainWindow::onUiTick() {
       speedometer_compass_->setDisconnected();
     if (gnss_status_)
       gnss_status_->setDisconnected();
+    if (retro_speedo_tach_)
+      retro_speedo_tach_->setDisconnected();
     return;
   }
 
@@ -91,6 +95,9 @@ void MainWindow::onUiTick() {
   if (lcd_display_) {
     lcd_display_->updateDisplay(gnss_state);
   }
+
+  if (retro_speedo_tach_)
+    retro_speedo_tach_->updateDisplay(gnss_state);
 }
 
 void MainWindow::connectGnss(const QString &host, uint16_t port) {
