@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <QObject>
 #include <QString>
 #include <QTcpSocket>
@@ -49,7 +51,7 @@ class GnssClient final : public QObject {
 public:
   explicit GnssClient(QObject *parent = nullptr);
 
-  void connectTcp(const QString &host, quint16 port);
+  void connectTcp(const QString &host, uint16_t port);
   void disconnect();
 
   bool isConnected() const;

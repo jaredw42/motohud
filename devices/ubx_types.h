@@ -87,7 +87,7 @@ struct UbxNavPvtMsg {
   le_int32_t heading_vehicle;
   le_int16_t magnetic_declination;
   le_uint16_t magnetic_declination_acc;
-};
+} __attribute__((packed));
 
 struct UbxNavRelPosNed {
   uint8_t version;

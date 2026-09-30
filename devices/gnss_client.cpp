@@ -14,7 +14,7 @@ GnssClient::GnssClient(QObject *parent) : QObject(parent) {
       this, &GnssClient::onSocketError);
 }
 
-void GnssClient::connectTcp(const QString &host, quint16 port) {
+void GnssClient::connectTcp(const QString &host, uint16_t port) {
   last_error_.clear();
 
   if (socket_.state() != QAbstractSocket::UnconnectedState)
@@ -105,9 +105,6 @@ void GnssClient::updateGnssPvt() {
       std::sqrt(std::pow((ned[0] + ned[1]), 2)) * kCentimetersToMeters;
   state_.baseline_ned[4] =
       std::sqrt(std::pow((ned[0] + ned[1] + ned[2]), 2)) * kCentimetersToMeters;
-
-  std::cout << "baseline n:" << state_.baseline_ned[0]
-            << " baseline 2d: " << state_.baseline_ned[3] << "\n";
 }
 
 QString GnssClient::degreesToCardinal(const float degrees) {

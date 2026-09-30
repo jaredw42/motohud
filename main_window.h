@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <QMainWindow>
 #include <QPushButton>
 #include <QStackedWidget>
@@ -7,6 +9,7 @@
 
 #include "devices/gnss_client.h"
 #include "widgets/gnss_status.h"
+#include "widgets/lcd_display.h"
 #include "widgets/speedometer_compass.h"
 #include "widgets/speedometer_compass_config.h"
 
@@ -21,7 +24,7 @@ protected:
 
 private slots:
   void onUiTick();
-  void connectGnss(const QString &host, quint16 port);
+  void connectGnss(const QString &host, uint16_t port);
   void showPrevPage();
   void showNextPage();
 
@@ -37,6 +40,7 @@ private:
 
   SpeedometerCompass *speedometer_compass_ = nullptr;
   GnssStatus *gnss_status_ = nullptr;
+  LcdDisplay *lcd_display_ = nullptr;
   SpeedometerCompassConfig *speedometer_config_ = nullptr;
   GnssClient *gnss_ = nullptr;
 

@@ -158,7 +158,7 @@ void GnssStatus::buildUi() {
           &GnssStatus::applyConnectionSettings);
 }
 
-void GnssStatus::setConnectionEndpoint(const QString &host, quint16 port) {
+void GnssStatus::setConnectionEndpoint(const QString &host, uint16_t port) {
   connection_host_ = host;
   connection_port_ = port;
   if (ip_address_input_)
@@ -178,7 +178,7 @@ void GnssStatus::applyConnectionSettings() {
   if (!port_is_valid || port_value < 1 || port_value > 65535)
     return;
 
-  const quint16 port = static_cast<quint16>(port_value);
+  const uint16_t port = static_cast<uint16_t>(port_value);
   if (host == connection_host_ && port == connection_port_)
     return;
 

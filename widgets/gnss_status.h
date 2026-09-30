@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <QLabel>
 #include <QLineEdit>
 #include <QString>
@@ -14,13 +16,13 @@ class GnssStatus : public QWidget {
 public:
   explicit GnssStatus(QWidget *parent = nullptr);
 
-  void setConnectionEndpoint(const QString &host, quint16 port);
+  void setConnectionEndpoint(const QString &host, uint16_t port);
 
   void setDisconnected();
   void updateDisplay(const GnssPvt &s);
 
 signals:
-  void connectionRequested(const QString &host, quint16 port);
+  void connectionRequested(const QString &host, uint16_t port);
 
 private:
   void buildUi();
@@ -37,7 +39,7 @@ private:
   QLineEdit *ip_address_input_ = nullptr;
   QLineEdit *port_input_ = nullptr;
   QString connection_host_;
-  quint16 connection_port_ = 8100;
+  uint16_t connection_port_ = 8100;
 
   DynamicTileConfig sv_tile_config_{24, 12, false};
 

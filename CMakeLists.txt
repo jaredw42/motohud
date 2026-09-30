@@ -19,6 +19,7 @@ set(SOURCES
     widgets/speedometer_compass.cpp
     widgets/speedometer_compass_config.cpp
     widgets/gnss_status.cpp
+    widgets/lcd_display.cpp
 )
 
 set(HEADERS
@@ -29,6 +30,7 @@ set(HEADERS
     widgets/speedometer_compass_config.h
     widgets/gnss_status.h
     widgets/tile.h
+    widgets/lcd_display.h
 )
 
 # Create executable
