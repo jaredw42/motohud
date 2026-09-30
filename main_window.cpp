@@ -45,10 +45,24 @@ void MainWindow::buildUi() {
 
   pages_->grabGesture(Qt::SwipeGesture);
 
-  prev_btn_ = new QPushButton("◀", root);
-  next_btn_ = new QPushButton("▶", root);
-  exit_btn_ = new QPushButton("EXIT APP");
-  fullscreen_btn_ = new QPushButton("FULLSCREEN", root);
+  auto *nav_bar = new QWidget(root);
+  nav_bar->setObjectName("navigationBar");
+  nav_bar->setStyleSheet(R"(
+    QWidget#navigationBar { background-color: black; }
+    QWidget#navigationBar QPushButton {
+      color: black;
+      background-color: white;
+      border: 1px solid #999999;
+      padding: 4px 8px;
+    }
+    QWidget#navigationBar QPushButton:hover { background-color: #e6e6e6; }
+    QWidget#navigationBar QPushButton:pressed { background-color: #cccccc; }
+  )");
+
+  prev_btn_ = new QPushButton("◀", nav_bar);
+  next_btn_ = new QPushButton("▶", nav_bar);
+  exit_btn_ = new QPushButton("EXIT APP", nav_bar);
+  fullscreen_btn_ = new QPushButton("FULLSCREEN", nav_bar);
 
   connect(prev_btn_, &QPushButton::clicked, this, &MainWindow::showPrevPage);
   connect(next_btn_, &QPushButton::clicked, this, &MainWindow::showNextPage);
@@ -56,7 +70,7 @@ void MainWindow::buildUi() {
   connect(fullscreen_btn_, &QPushButton::clicked, this,
           &MainWindow::toggleFullscreen);
 
-  auto *nav = new QHBoxLayout;
+  auto *nav = new QHBoxLayout(nav_bar);
   nav->setContentsMargins(4, 2, 4, 2);
   nav->setSpacing(6);
 
@@ -71,7 +85,7 @@ void MainWindow::buildUi() {
   outer->setContentsMargins(0, 0, 0, 0);
   outer->setSpacing(0);
   outer->addWidget(pages_, 1);
-  outer->addLayout(nav);
+  outer->addWidget(nav_bar);
 }
 
 void MainWindow::onUiTick() {

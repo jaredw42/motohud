@@ -10,7 +10,7 @@ LcdDisplay::LcdDisplay(QWidget *parent) : QWidget(parent) {
   gps_towsec_ = new QLCDNumber(this);
   gps_towsec_->setDigitCount(6);
   gps_towsec_->setStyleSheet(kLCDNumberStyleSheet);
-  gps_towsec_->setSegmentStyle(QLCDNumber::Filled);
+  gps_towsec_->setSegmentStyle(QLCDNumber::Flat);
 
   auto *layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
