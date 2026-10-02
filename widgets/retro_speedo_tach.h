@@ -5,6 +5,7 @@
 #include <QWidget>
 
 #include "devices/gnss_client.h"
+#include "devices/rpi_pwm_gpio.h"
 
 class QLCDNumber;
 class RetroGauge;
@@ -13,14 +14,14 @@ class RetroSpeedoTach : public QWidget {
   Q_OBJECT
 
 public:
-  explicit RetroSpeedoTach(QWidget *parent = nullptr);
+  explicit RetroSpeedoTach(RpiPwmGpio *tachometer,
+                           QWidget *parent = nullptr);
 
   void updateDisplay(const GnssPvt &gnss_state);
-  void setEngineRpm(uint16_t rpm);
-  void setTachUnavailable();
   void setDisconnected();
 
 private:
+  RpiPwmGpio *tachometer_ = nullptr;
   RetroGauge *speed_gauge_ = nullptr;
   RetroGauge *tach_gauge_ = nullptr;
   QLCDNumber *mileage_display_ = nullptr;

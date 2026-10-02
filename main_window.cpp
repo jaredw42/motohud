@@ -9,9 +9,9 @@
 #include <QWidget>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+  tachometer_ = new RpiPwmGpio(this);
   buildUi();
 
-  tachometer_ = new RpiPwmGpio(this);
   gnss_ = new GnssClient(this);
   const QString gnss_host = QStringLiteral("192.168.0.166");
   constexpr uint16_t gnss_port = 8100;
@@ -34,7 +34,7 @@ void MainWindow::buildUi() {
       new SpeedometerCompassConfig(pages_, speedometer_compass_);
   gnss_status_ = new GnssStatus(pages_);
   lcd_display_ = new LcdDisplay(pages_);
-  retro_speedo_tach_ = new RetroSpeedoTach(pages_);
+  retro_speedo_tach_ = new RetroSpeedoTach(tachometer_, pages_);
   connect(gnss_status_, &GnssStatus::connectionRequested, this,
           &MainWindow::connectGnss);
 
@@ -90,13 +90,6 @@ void MainWindow::buildUi() {
 }
 
 void MainWindow::onUiTick() {
-  if (retro_speedo_tach_) {
-    if (tachometer_ && tachometer_->isOpen())
-      retro_speedo_tach_->setEngineRpm(tachometer_->rpm());
-    else
-      retro_speedo_tach_->setTachUnavailable();
-  }
-
   if (gnss_ == nullptr)
     return;
 

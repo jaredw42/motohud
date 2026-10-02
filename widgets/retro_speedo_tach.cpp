@@ -11,7 +11,6 @@
 #include <QLCDNumber>
 #include <QLabel>
 #include <QPainter>
-#include <QRandomGenerator>
 #include <QResizeEvent>
 #include <QTime>
 #include <QVBoxLayout>
@@ -22,7 +21,7 @@ constexpr int kTachSegmentCount = 39;
 constexpr uint16_t kSpeedMaximumMph = 120;
 constexpr uint16_t kSpeedTickIntervalMph = 20;
 constexpr uint16_t kTachMaximumRpm = 6500;
-constexpr uint16_t kTachRedlineRpm = 6000;
+constexpr uint16_t kTachRedlineRpm = 5800;
 constexpr uint16_t kTachTickIntervalRpm = 1000;
 constexpr int kCurveLengthSamples = 128;
 constexpr double kMetersPerMile = 1609.344;
@@ -151,7 +150,7 @@ public:
   }
 
   void setValue(uint16_t value) {
-    value_ = std::min(value, config_.maximum);
+    value_ = value;
     available_ = true;
     value_display_->display(value_);
     update();
@@ -197,7 +196,9 @@ protected:
     const double bar_thickness =
         qMax(5.0, height() * config_.bar_thickness_fraction);
     const double filled_fraction =
-        available_ ? static_cast<double>(value_) / config_.maximum : 0.0;
+      available_ ? std::min(static_cast<double>(value_) / config_.maximum,
+                  1.0)
+             : 0.0;
     const double segment_gap =
       kSegmentGapFraction / config_.segment_count;
 
@@ -239,13 +240,15 @@ protected:
       const double fraction = static_cast<double>(tick_value) / maximum_value;
       const QPointF point = gaugePoint(size(), fraction, config_);
       const QPointF normal = gaugeNormal(size(), fraction, config_);
-      const double tick_start = band_width * 0.5 + 4.0;
-      const QPointF tick_inner = point + normal * tick_start;
-      const QPointF tick_outer = point + normal * (tick_start + 8.0);
+      const QPointF tick_center = point + normal * (band_width * 0.5 + 4.0);
+      const double tick_angle = qDegreesToRadians(config_.bar_rotation_degrees);
+      const QPointF tick_half_length(qCos(tick_angle) * 8.0,
+                 qSin(tick_angle) * 8.0);
       painter.setPen(QPen(QColor("#E8B52B"), 2.0));
-      painter.drawLine(tick_inner, tick_outer);
+      painter.drawLine(tick_center - tick_half_length,
+               tick_center + tick_half_length);
 
-      const QPointF label_position = point + normal * (tick_start + 22.0);
+      const QPointF label_position = point + normal * (band_width * 0.5 + 26.0);
         const QString label =
             QString::number(tick_value / config_.tick_label_divisor);
       const QFontMetricsF metrics(scale_font);
@@ -275,7 +278,8 @@ private:
   QLCDNumber *value_display_ = nullptr;
 };
 
-RetroSpeedoTach::RetroSpeedoTach(QWidget *parent) : QWidget(parent) {
+RetroSpeedoTach::RetroSpeedoTach(RpiPwmGpio *tachometer, QWidget *parent)
+  : QWidget(parent), tachometer_(tachometer) {
   setStyleSheet("RetroSpeedoTach { background-color: #100D04; }");
 
   speed_gauge_ = new RetroGauge(kSpeedGaugeConfig, this);
@@ -328,8 +332,12 @@ RetroSpeedoTach::RetroSpeedoTach(QWidget *parent) : QWidget(parent) {
 }
 
 void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
+  if (tachometer_ && tachometer_->isOpen())
+    tach_gauge_->setValue(tachometer_->rpm());
+  else
+    tach_gauge_->setUnavailable();
+
   // speed_gauge_->setValue(gnss_state.sog_mph);
-  // setEngineRpm(QRandomGenerator::global()->bounded(6501));
   if (dummy_speed_ > 125) {
     dummy_speed_ = 0;
   }
@@ -352,10 +360,6 @@ void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
     time_display_->display(QStringLiteral("--:--"));
   }
 }
-
-void RetroSpeedoTach::setEngineRpm(uint16_t rpm) { tach_gauge_->setValue(rpm); }
-
-void RetroSpeedoTach::setTachUnavailable() { tach_gauge_->setUnavailable(); }
 
 void RetroSpeedoTach::setDisconnected() {
   speed_gauge_->setUnavailable();
