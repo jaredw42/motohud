@@ -8,6 +8,7 @@
 #include <QTimer>
 
 #include "devices/gnss_client.h"
+#include "devices/rpi_pwm_gpio.h"
 #include "widgets/gnss_status.h"
 #include "widgets/lcd_display.h"
 #include "widgets/retro_speedo_tach.h"
@@ -47,6 +48,7 @@ private:
   RetroSpeedoTach *retro_speedo_tach_ = nullptr;
   SpeedometerCompassConfig *speedometer_config_ = nullptr;
   GnssClient *gnss_ = nullptr;
+  RpiPwmGpio *tachometer_ = nullptr;
 
   QTimer ui_timer_;
 

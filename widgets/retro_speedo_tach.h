@@ -17,6 +17,7 @@ public:
 
   void updateDisplay(const GnssPvt &gnss_state);
   void setEngineRpm(uint16_t rpm);
+  void setTachUnavailable();
   void setDisconnected();
 
 private:
@@ -26,6 +27,5 @@ private:
   QLCDNumber *time_display_ = nullptr;
 
   uint16_t dummy_speed_{0U};
-  uint16_t dummy_rpm_{0U};
   float dummy_odo_{0.0f};
 };

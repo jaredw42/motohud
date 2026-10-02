@@ -9,12 +9,15 @@ set(CMAKE_AUTORCC ON)
 
 # Find Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GPIOD REQUIRED IMPORTED_TARGET libgpiod)
 
 # Add source files
 set(SOURCES
     motohud.cpp
     main_window.cpp
     devices/gnss_client.cpp
+    devices/rpi_pwm_gpio.cpp
     devices/ublox_parser.cpp
     widgets/speedometer_compass.cpp
     widgets/speedometer_compass_config.cpp
@@ -26,6 +29,7 @@ set(SOURCES
 set(HEADERS
     main_window.h
     devices/gnss_client.h
+    devices/rpi_pwm_gpio.h
     devices/ublox_parser.h
     widgets/speedometer_compass.h
     widgets/speedometer_compass_config.h
@@ -43,6 +47,11 @@ qt_standard_project_setup()
 
 # Link Qt6 libraries
 target_link_libraries(motohud PRIVATE Qt6::Widgets Qt6::Network)
+target_link_libraries(motohud PRIVATE PkgConfig::GPIOD)
+
+if(GPIOD_VERSION VERSION_GREATER_EQUAL "2.0")
+    target_compile_definitions(motohud PRIVATE MOTOHUD_LIBGPIOD_V2)
+endif()
 
 # Include directories
 target_include_directories(motohud PRIVATE

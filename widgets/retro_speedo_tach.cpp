@@ -334,14 +334,9 @@ void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
     dummy_speed_ = 0;
   }
 
-  if (dummy_rpm_ > 6600) {
-    dummy_rpm_ = 0;
-  }
   dummy_speed_++;
-  dummy_rpm_ += 81;
   dummy_odo_ += 0.1 ; 
   speed_gauge_->setValue(dummy_speed_);
-  setEngineRpm(dummy_rpm_);
 
   mileage_display_->display(
     //   QString::number(gnss_state.odometer_m / kMetersPerMile, 'f', 1));
@@ -360,9 +355,10 @@ void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
 
 void RetroSpeedoTach::setEngineRpm(uint16_t rpm) { tach_gauge_->setValue(rpm); }
 
+void RetroSpeedoTach::setTachUnavailable() { tach_gauge_->setUnavailable(); }
+
 void RetroSpeedoTach::setDisconnected() {
   speed_gauge_->setUnavailable();
-  tach_gauge_->setUnavailable();
   mileage_display_->display(QStringLiteral("---.-"));
   time_display_->display(QStringLiteral("--:--"));
 }
