@@ -26,6 +26,7 @@ constexpr uint16_t kTachRedlineRpm = 5800;
 constexpr int kCurveLengthSamples = 128;
 constexpr int kBandEdgeSamples = 4;
 constexpr float kMinimumCurveLength = 0.0001f;
+constexpr float kMetersPerMile = 1609.344f;
 
 struct GaugeCurve {
   QPointF start;
@@ -76,7 +77,7 @@ struct GaugeConfig {
 // curve.
 GaugeConfig speedGaugeConfig() {
   GaugeConfig config;
-  config.title = QStringLiteral("miles per hour");
+  config.title = QStringLiteral("MPH");
   config.maximum = kSpeedMaximumMph;
   config.tick_interval = 20;
   config.tick_label_divisor = 1;
@@ -119,7 +120,7 @@ GaugeConfig tachGaugeConfig() {
   config.band_height_fraction = 0.20f;
   config.bar_rotation_degrees = 90.0f;
   config.segment_gap_fraction = 0.15f;
-  config.scale_placement = ScalePlacement::CurveNormal;
+  config.scale_placement = ScalePlacement::BandAxis;
   config.scale_side = -1.0f;
   config.tick_band_offset_fraction = 0.0f;
   config.tick_offset = 0.0f;
@@ -413,13 +414,12 @@ private:
         std::abs(scale_direction.x() * tick_direction.x() +
                  scale_direction.y() * tick_direction.y()) *
         config_.tick_half_length;
-    const qreal scale_outer_extent =
-        std::max(band_half_extent, tick_distance + tick_half_extent);
     const QPointF tangent(-scale_direction.y(), scale_direction.x());
+    // The label follows the tick, including the tick's instance offset.
     const QPointF label_position =
-        point +
+        tick_center +
         scale_direction *
-            (scale_outer_extent + label_half_extent + config_.tick_label_gap) +
+            (tick_half_extent + label_half_extent + config_.tick_label_gap) +
         tangent * config_.tick_label_tangent_offset +
         config_.tick_label_position_offset;
     const QRectF label_rect(label_position.x() - label_width * 0.5,
@@ -490,13 +490,19 @@ RetroSpeedoTach::RetroSpeedoTach(RpiPwmGpio *tachometer, QWidget *parent)
 }
 
 void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
-  // Preserve the supplied demo values while validating the gauge layout.
   // For live RPM, use tachometer_->rpm() when tachometer_->isOpen().
   tach_gauge_->setValue(tachometer_->rpm());
   dummy_speed_ = tachometer_->rpm() / 54.1667;
   speed_gauge_->setValue(dummy_speed_);
-  dummy_odo_ = 420.6f;
-  mileage_display_->display(QString::number(dummy_odo_, 'f', 1));
+
+  // tach_gauge_->setValue(tachometer_->rpm());
+  // tach_gauge_->setUnavailable();
+  //   ++dummy_speed_;
+  dummy_odo_ = 420.6;
+
+  mileage_display_->display(
+      //   QString::number(gnss_state.odometer_m / kMetersPerMile, 'f', 1));
+      QString::number(dummy_odo_, 'f', 1));
 
   const auto &utc = gnss_state.utc_datetime;
   const QDate date(utc[0], utc[1], utc[2]);
