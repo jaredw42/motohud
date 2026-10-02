@@ -492,8 +492,8 @@ RetroSpeedoTach::RetroSpeedoTach(RpiPwmGpio *tachometer, QWidget *parent)
 void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
   // Preserve the supplied demo values while validating the gauge layout.
   // For live RPM, use tachometer_->rpm() when tachometer_->isOpen().
-  tach_gauge_->setValue(4281);
-  dummy_speed_ = 81;
+  tach_gauge_->setValue(tachometer_->rpm());
+  dummy_speed_ = tachometer_->rpm() / 54.1667;
   speed_gauge_->setValue(dummy_speed_);
   dummy_odo_ = 420.6f;
   mileage_display_->display(QString::number(dummy_odo_, 'f', 1));
