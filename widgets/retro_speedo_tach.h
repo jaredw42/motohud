@@ -14,8 +14,7 @@ class RetroSpeedoTach : public QWidget {
   Q_OBJECT
 
 public:
-  explicit RetroSpeedoTach(RpiPwmGpio *tachometer,
-                           QWidget *parent = nullptr);
+  explicit RetroSpeedoTach(RpiPwmGpio *tachometer, QWidget *parent = nullptr);
 
   void updateDisplay(const GnssPvt &gnss_state);
   void setDisconnected();
