@@ -8,6 +8,7 @@
 #include <QDate>
 #include <QDateTime>
 #include <QFontMetricsF>
+#include <QFontDatabase>
 #include <QHBoxLayout>
 #include <QLCDNumber>
 #include <QLabel>
@@ -77,7 +78,7 @@ struct GaugeConfig {
 // curve.
 GaugeConfig speedGaugeConfig() {
   GaugeConfig config;
-  config.title = QStringLiteral("MPH");
+  config.title = QStringLiteral("miles per hour");
   config.maximum = kSpeedMaximumMph;
   config.tick_interval = 20;
   config.tick_label_divisor = 1;
@@ -99,8 +100,13 @@ GaugeConfig speedGaugeConfig() {
   config.label_normal_side = 1.0f;
   config.tick_label_font_width_divisor = 20;
   config.curve_spacing = CurveSpacing::UniformDistance;
-  config.curve = {QPointF(0.22, 0.88), QPointF(0.22, 0.48), QPointF(0.84, 0.22),
-                  QPointF(0.84, 0.12)};
+ const auto start = QPointF(0.22, 0.88);
+const auto first_control = QPointF(0.22, 0.59);
+const auto second_control = QPointF(0.60, 0.28);
+const auto end = QPointF(0.84, 0.12);
+
+config.curve = {start, first_control, second_control, end};
+ 
   return config;
 }
 
@@ -133,8 +139,12 @@ GaugeConfig tachGaugeConfig() {
   config.label_normal_side = 1.0f;
   config.tick_label_font_width_divisor = 18;
   config.curve_spacing = CurveSpacing::UniformParameter;
-  config.curve = {QPointF(0.17, 0.84), QPointF(0.397, 0.55),
-                  QPointF(0.623, 0.17), QPointF(0.85, 0.30)};
+  const auto start = QPointF(0.17, 0.84);
+const auto first_control = QPointF(0.397, 0.65);
+const auto second_control = QPointF(0.623, 0.095);
+const auto end = QPointF(0.85, 0.40);
+
+config.curve = {start, first_control, second_control, end};
   return config;
 }
 
@@ -226,12 +236,17 @@ protected:
     painter.drawRoundedRect(panel, 12.0, 12.0);
 
     QFont title_font = painter.font();
+    QFont font =
+    QFontDatabase::font("Orbitron", "Bold", 24);
     title_font.setBold(true);
     title_font.setPixelSize(qBound(20, width() / 14, 32));
-    painter.setFont(title_font);
+    painter.setFont(font);
     painter.setPen(QColor("#E8B52B"));
-    painter.drawText(QRectF(0.0, 12.0, width(), 30.0), Qt::AlignCenter,
-                     config_.title);
+    painter.drawText(
+    QRectF(14.0, value_display_->y() - 38.0,
+           width() - 28.0, 30.0),
+    Qt::AlignRight | Qt::AlignVCenter,
+    config_.title);
 
     const float band_width =
         std::max(config_.minimum_band_width,
