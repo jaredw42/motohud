@@ -84,9 +84,12 @@ private:
     GaugeCurve curve;
   };
 
-  static constexpr GaugeCurve speedo_curve = {QPointF(0.22, 0.88), QPointF(0.22, 0.59), QPointF(0.60, 0.28),
-                QPointF(0.84, 0.12)};
-
+  static constexpr GaugeCurve speedo_curve = {
+      QPointF(0.22, 0.97), // start
+      QPointF(0.22, 0.59), // first cp
+      QPointF(0.60, 0.28), // second cp
+      QPointF(0.84, 0.05)  // end
+  };
 
   const GaugeConfig speed_config_{
       .title = QStringLiteral("miles per hour"),
@@ -105,15 +108,19 @@ private:
       .curve = speedo_curve,
   };
 
-  static constexpr GaugeCurve tach_curve = {QPointF(0.1, 0.9), QPointF(0.22, 0.59), QPointF(0.70, 0.2),
-                QPointF(0.9, 0.3)};
+  static constexpr GaugeCurve tach_curve = {
+      QPointF(0.03, 0.90), // start
+      QPointF(0.22, 0.65), // first cp
+      QPointF(0.70, 0.25), // second cp
+      QPointF(0.95, 0.35)  // end
+  };
 
   const GaugeConfig tach_config_{
-      .title = QStringLiteral("rpm x100"),
+      .title = QStringLiteral("revolutions per minute"),
       .maximum = kTachMaximumRpm,
       .redline = kTachRedlineRpm,
       .tick_interval = 1000,
-      .tick_label_divisor = 100,
+      .tick_label_divisor = 1000,
       .segment_count = 65,
       .lcd_digits = 4,
       .auxiliary_title = tr("TIME"),
@@ -127,7 +134,6 @@ private:
       .curve = tach_curve,
   };
 
-  // Internal painted gauge used for both speed and RPM.
   class RetroGauge : public QWidget {
   public:
     explicit RetroGauge(const GaugeConfig &config, QWidget *parent = nullptr);

@@ -41,8 +41,6 @@ private:
   QString connection_host_;
   uint16_t connection_port_ = 8100;
 
-  DynamicTileConfig sv_tile_config_{24, 12, false};
-
   static constexpr auto kTableStyleSheet = (R"(
   QTableWidget {
     color: white;

@@ -25,7 +25,17 @@ RetroSpeedoTach::RetroSpeedoTach(RpiPwmGpio *tachometer, QWidget *parent)
 void RetroSpeedoTach::buildUI() {
   setStyleSheet("RetroSpeedoTach { background-color: #100D04; }");
 
-  // Both gauges share the full width; mileage and time live inside them.
+  const auto font_id = QFontDatabase::addApplicationFont(
+      ":/widgets/assets/Orbitron-VariableFont_wght.ttf");
+
+  const auto font_family =
+      QFontDatabase::applicationFontFamilies(font_id).first();
+
+  QFont font(font_family);
+  font.setPixelSize(24);
+
+  setFont(font);
+
   speed_gauge_ = new RetroGauge(speed_config_, this);
   tach_gauge_ = new RetroGauge(tach_config_, this);
   speed_gauge_->setAuxiliaryValue(QStringLiteral("---.-"));
@@ -58,7 +68,8 @@ void RetroSpeedoTach::updateDisplay(const GnssPvt &gnss_state) {
   const QTime time(utc[3], utc[4], utc[5]);
   if (date.isValid() && time.isValid()) {
     const QDateTime utc_datetime(date, time, Qt::UTC);
-    tach_gauge_->setAuxiliaryValue(utc_datetime.toLocalTime().toString("hh:mm"));
+    tach_gauge_->setAuxiliaryValue(
+        utc_datetime.toLocalTime().toString("hh:mm"));
   } else {
     tach_gauge_->setAuxiliaryValue(QStringLiteral("--:--"));
   }
@@ -133,13 +144,14 @@ void RetroSpeedoTach::RetroGauge::resizeEvent(QResizeEvent *event) {
   if (config_.auxiliary_placement == AuxiliaryPlacement::Bottom) {
     const int auxiliary_y = height() - auxiliary_height - 14;
     const int display_x = width() - display_width - 14;
-    const int title_width = qCeil(
-        QFontMetricsF(auxiliary_font).horizontalAdvance(config_.auxiliary_title));
+    const int title_width =
+        qCeil(QFontMetricsF(auxiliary_font)
+                  .horizontalAdvance(config_.auxiliary_title));
     auxiliary_title_->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     auxiliary_title_->setGeometry(display_x - title_width - 8, auxiliary_y,
-                                 title_width, auxiliary_height);
+                                  title_width, auxiliary_height);
     auxiliary_display_->setGeometry(display_x, auxiliary_y, display_width,
-                                   auxiliary_height);
+                                    auxiliary_height);
     value_bottom = auxiliary_y - 10;
   } else {
     const int clock_width = qRound(width() * 0.34);
@@ -171,9 +183,9 @@ void RetroSpeedoTach::RetroGauge::paintEvent(QPaintEvent *) {
   painter.drawRoundedRect(panel, 12.0, 12.0);
 
   QFont title_font = painter.font();
-  QFont font = QFontDatabase::font("Orbitron", "Bold", 24);
-  title_font.setBold(true);
-  title_font.setPixelSize(qBound(20, width() / 14, 32));
+  QFont font = QFontDatabase::font("Orbitron", "Bold", 12);
+  // title_font.setBold(true);
+  // title_font.setPixelSize(qBound(20, width() / 14, 32));
   painter.setFont(font);
   painter.setPen(QColor("#E8B52B"));
   painter.drawText(

@@ -29,7 +29,7 @@ QLabel#secondary { color: #C8C8C8; }
   titleLabel->setAlignment(Qt::AlignCenter);
 
   QFont tf;
-  tf.setPointSize(12);
+  tf.setPointSize(18);
   tf.setBold(false);
   titleLabel->setFont(tf);
 

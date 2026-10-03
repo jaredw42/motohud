@@ -59,3 +59,10 @@ target_include_directories(motohud PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/devices
     ${CMAKE_CURRENT_SOURCE_DIR}/widgets
 )
+
+qt_add_resources(motohud "widget_assets"
+    PREFIX "/widgets"
+    BASE "widgets"
+    FILES
+        widgets/assets/Orbitron-VariableFont_wght.ttf
+)
